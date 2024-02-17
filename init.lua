@@ -2,7 +2,7 @@
 
 local M = {}
 
-M.setup = function()
+function M.setup()
 	print("Hello, World!")
 end
 

@@ -14,7 +14,7 @@ local events = {
 local changedLines = {}
 
 function M.update_lines()
-	print(utils.blame_to_table(utils.get_blame()))
+	-- print(utils.blame_to_table(utils.get_blame()))
 
 	for i, _ in ipairs(changedLines) do
 		table.remove(changedLines, i)
@@ -47,7 +47,7 @@ function M.setup()
 	vim.keymap.set("n", "gBa", function()
 		M.update_lines()
 	end)
-	vim.keymap.set("n", "gBc", function()
+	vim.keymap.set("n", "<S-Down>", function()
 		local next_change_block_line = vim.fn.line(".")
 
 		for _, value in ipairs(utils.split_by_groups(changedLines)) do
@@ -55,6 +55,23 @@ function M.setup()
 
 			if value > next_change_block_line then
 				print("Moving to line " .. value)
+				utils.move_pointer(value)
+				break
+			end
+		end
+	end)
+	vim.keymap.set("n", "<S-Up>", function()
+		local next_change_block_line = vim.fn.line(".")
+
+		local split_changed_lines = utils.split_by_groups(changedLines)
+		-- loop backwards
+		for i = #split_changed_lines, 1, -1 do
+			-- print(i)
+			local value = split_changed_lines[i]
+			-- print(value, next_change_block_line)
+
+			if value < next_change_block_line then
+				-- print("Moving to line " .. value)
 				utils.move_pointer(value)
 				break
 			end

@@ -3,12 +3,12 @@ local M = {}
 function M.blame_to_table(blame)
 	local lines = {}
 
-	print("+++++++++++++++++++++++++++++++++++++++++++++++++")
+	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 	for line in blame:gmatch("[^\n]+") do
-		print(line)
+		-- print(line)
 		table.insert(lines, line)
 	end
-	print("+++++++++++++++++++++++++++++++++++++++++++++++++")
+	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 
 	local numbers = {}
 	-- split lines by firest 8 spaces
@@ -38,14 +38,14 @@ function M.split_by_groups(numbers)
 	local prev_number = 0
 	local first_in_sequence = {}
 
-	for _, number in ipairs(numbers) do
-		print("--" .. number)
-	end
+	-- for _, number in ipairs(numbers) do
+	-- 	print("--" .. number)
+	-- end
 
 	for _, number in ipairs(numbers) do
-		print(number)
+		-- print(number)
 		if number ~= prev_number + 1 then
-			print("Adding..")
+			-- print("Adding..")
 			table.insert(first_in_sequence, number)
 		end
 		prev_number = number

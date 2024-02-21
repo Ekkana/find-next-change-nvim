@@ -1,0 +1,93 @@
+local M = {}
+
+function M.blame_to_table(blame)
+	local lines = {}
+
+	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
+	for line in blame:gmatch("[^\n]+") do
+		-- print(line)
+		table.insert(lines, line)
+	end
+	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
+
+	local numbers = {}
+	-- split lines by firest 8 spaces
+	for _, line in ipairs(lines) do
+		-- column number is 9-th on my machine
+		-- match text after +0000
+		local match = vim.fn.split(line, "0000")
+		local trimmed = match[2]:match("%d+")
+		table.insert(numbers, tonumber(trimmed))
+	end
+
+	return numbers
+end
+
+function M.split(str, sep)
+	if sep == nil then
+		sep = "%s"
+	end
+	local t = {}
+	for substr in string.gmatch(str, "([" .. sep .. "]+)") do
+		table.insert(t, substr)
+	end
+	return t
+end
+
+function M.split_by_groups(numbers)
+	local prev_number = 0
+	local first_in_sequence = {}
+
+	-- for _, number in ipairs(numbers) do
+	-- 	print("--" .. number)
+	-- end
+
+	for _, number in ipairs(numbers) do
+		-- print(number)
+		if number ~= prev_number + 1 then
+			-- print("Adding..")
+			table.insert(first_in_sequence, number)
+		end
+		prev_number = number
+	end
+
+	return first_in_sequence
+end
+
+function M.move_pointer(line_number)
+	vim.fn.cursor({ line_number, 0 })
+end
+
+function M.get_text(input)
+	local handle = io.popen(input)
+	local result
+
+	if handle then
+		result = handle:read("*a")
+		handle:close()
+	end
+
+	return result
+end
+
+function M.filter_lines(input_text)
+	local pattern = "^00000000"
+	local lines = {}
+
+	for line in input_text:gmatch("[^\n]+") do
+		if line:find(pattern) then
+			table.insert(lines, line)
+		end
+	end
+
+	return table.concat(lines, "\n")
+end
+
+function M.get_blame()
+	local current_file = vim.fn.expand("%:p")
+	local git_blame = M.get_text("git blame " .. current_file)
+
+	return M.filter_lines(git_blame)
+end
+
+return M

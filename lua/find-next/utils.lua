@@ -3,15 +3,14 @@ local M = {}
 function M.blame_to_table(blame)
 	local lines = {}
 
-	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 	for line in blame:gmatch("[^\n]+") do
-		-- print(line)
 		table.insert(lines, line)
 	end
-	-- print("+++++++++++++++++++++++++++++++++++++++++++++++++")
 
 	local numbers = {}
-	-- split lines by firest 8 spaces
+
+	-- TODO: There must be a better way to do this
+	-- split lines by first 8 spaces
 	for _, line in ipairs(lines) do
 		-- column number is 9-th on my machine
 		-- match text after +0000
@@ -27,6 +26,7 @@ function M.split(str, sep)
 	if sep == nil then
 		sep = "%s"
 	end
+
 	local t = {}
 	for substr in string.gmatch(str, "([" .. sep .. "]+)") do
 		table.insert(t, substr)
@@ -38,14 +38,8 @@ function M.split_by_groups(numbers)
 	local prev_number = 0
 	local first_in_sequence = {}
 
-	-- for _, number in ipairs(numbers) do
-	-- 	print("--" .. number)
-	-- end
-
 	for _, number in ipairs(numbers) do
-		-- print(number)
 		if number ~= prev_number + 1 then
-			-- print("Adding..")
 			table.insert(first_in_sequence, number)
 		end
 		prev_number = number
@@ -70,6 +64,7 @@ function M.get_text(input)
 	return result
 end
 
+-- TODO: There must be a better way to do this
 function M.filter_lines(input_text)
 	local pattern = "^00000000"
 	local lines = {}

@@ -3,8 +3,7 @@ local utils = require("find-next.utils")
 local M = {}
 
 -- TODO: Add error handling
--- TODO: Probably we need to fire git blame on some event (file save)
--- TODO: Add debounce so we don't run this too much
+-- TODO: Probably we need to fire git blame on some better event (file save)
 
 local events = {
 	"BufWritePost",
@@ -14,16 +13,14 @@ local events = {
 local changedLines = {}
 
 function M.update_lines()
-	-- print(utils.blame_to_table(utils.get_blame()))
+	local newBlame = utils.blame_to_table(utils.get_blame())
+	local newTable = {}
 
-	for i, _ in ipairs(changedLines) do
-		table.remove(changedLines, i)
+	for _, value in ipairs(newBlame) do
+		table.insert(newTable, value)
 	end
 
-	for _, value in ipairs(utils.blame_to_table(utils.get_blame())) do
-		-- convert "number)" to number
-		table.insert(changedLines, value)
-	end
+	changedLines = utils.split_by_groups(newTable)
 end
 
 function M.listen_to_events()
@@ -32,54 +29,53 @@ function M.listen_to_events()
 	end
 end
 
--- convert blame output to a table
+function M.findNextBlockLoop()
+	if #changedLines == 0 then
+		return
+	end
+
+	local cur_line = vim.fn.line(".")
+
+	for _, value in ipairs(changedLines) do
+		if value > cur_line then
+			utils.move_pointer(value)
+			return
+		end
+	end
+
+	utils.move_pointer(changedLines[1])
+end
+
+function M.findPrevBlockLoop()
+	if #changedLines == 0 then
+		return
+	end
+
+	local cur_line = vim.fn.line(".")
+
+	for i = #changedLines, 1, -1 do
+		local value = changedLines[i]
+		if value < cur_line then
+			utils.move_pointer(value)
+			return
+		end
+	end
+
+	utils.move_pointer(changedLines[#changedLines])
+end
 
 function M.setup()
-	-- log message to nvim console
-	-- print("Find Next loaded")
-	-- print(M.get_branch_name())
-	-- print("----------")
-
 	M.listen_to_events()
-	-- local changes = M.get_text("git blame ./lua/find-next/init.lua")
-	-- print(M.filter_lines(changes))
 
 	vim.keymap.set("n", "gBa", function()
 		M.update_lines()
 	end)
 	vim.keymap.set("n", "<S-Down>", function()
-		local next_change_block_line = vim.fn.line(".")
-
-		for _, value in ipairs(utils.split_by_groups(changedLines)) do
-			print(value, next_change_block_line)
-
-			if value > next_change_block_line then
-				print("Moving to line " .. value)
-				utils.move_pointer(value)
-				break
-			end
-		end
+		M.findNextBlockLoop()
 	end)
 	vim.keymap.set("n", "<S-Up>", function()
-		local next_change_block_line = vim.fn.line(".")
-
-		local split_changed_lines = utils.split_by_groups(changedLines)
-		-- loop backwards
-		for i = #split_changed_lines, 1, -1 do
-			-- print(i)
-			local value = split_changed_lines[i]
-			-- print(value, next_change_block_line)
-
-			if value < next_change_block_line then
-				-- print("Moving to line " .. value)
-				utils.move_pointer(value)
-				break
-			end
-		end
+		M.findPrevBlockLoop()
 	end)
-	-- print(M.get_blame())
 end
-
-M.setup()
 
 return M

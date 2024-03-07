@@ -78,6 +78,4 @@ function M.setup()
 	end)
 end
 
-M.setup()
-
 return M

@@ -10,15 +10,15 @@ return {
   config = function()
     local find = require("find-next")
 
-    -- Currently it subscribes to BufWritePost event.
+    -- Currently it subscribes to BufWritePost and BufReadPost events.
     find.listen_to_events()
 
     -- If you don't want to subscribe, you can use
-    vim.keymap.set("n", "gBa", function()
-      M.update_lines()
-    end)
+    -- vim.keymap.set("n", "gBa", function()
+    --   M.update_lines()
+    -- end)
 
-    -- And of course you want to somehow navigate:
+    -- Navigation keybindings
     vim.keymap.set("n", "<S-Down>", function()
       find.findNextBlockLoop()
     end)

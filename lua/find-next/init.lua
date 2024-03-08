@@ -8,11 +8,13 @@ local M = {}
 local events = {
 	"BufWritePost",
 	-- "BufEnter",
+	"BufReadPost",
 }
 
 local changedLines = {}
 
 function M.update_lines()
+	local bufName = vim.fn.expand("%:p")
 	local newBlame = utils.blame_to_table(utils.get_blame())
 	local newTable = {}
 
@@ -20,7 +22,7 @@ function M.update_lines()
 		table.insert(newTable, value)
 	end
 
-	changedLines = utils.split_by_groups(newTable)
+	changedLines[bufName] = utils.split_by_groups(newTable)
 end
 
 function M.listen_to_events()
@@ -30,38 +32,44 @@ function M.listen_to_events()
 end
 
 function M.findNextBlockLoop()
-	if #changedLines == 0 then
+	local bufName = vim.fn.expand("%:p")
+	local curFileChanges = changedLines[bufName]
+
+	if #curFileChanges == 0 then
 		return
 	end
 
 	local cur_line = vim.fn.line(".")
 
-	for _, value in ipairs(changedLines) do
+	for _, value in ipairs(curFileChanges) do
 		if value > cur_line then
 			utils.move_pointer(value)
 			return
 		end
 	end
 
-	utils.move_pointer(changedLines[1])
+	utils.move_pointer(curFileChanges[1])
 end
 
 function M.findPrevBlockLoop()
-	if #changedLines == 0 then
+	local bufName = vim.fn.expand("%:p")
+	local curFileChanges = changedLines[bufName]
+
+	if #curFileChanges == 0 then
 		return
 	end
 
 	local cur_line = vim.fn.line(".")
 
-	for i = #changedLines, 1, -1 do
-		local value = changedLines[i]
+	for i = #curFileChanges, 1, -1 do
+		local value = curFileChanges[i]
 		if value < cur_line then
 			utils.move_pointer(value)
 			return
 		end
 	end
 
-	utils.move_pointer(changedLines[#changedLines])
+	utils.move_pointer(curFileChanges[#curFileChanges])
 end
 
 function M.setup()

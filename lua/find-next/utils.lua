@@ -1,6 +1,10 @@
 local M = {}
 
 function M.blame_to_table(blame)
+	if blame == nil then
+		return {}
+	end
+
 	local lines = {}
 
 	for line in blame:gmatch("[^\n]+") do
@@ -78,11 +82,31 @@ function M.filter_lines(input_text)
 	return table.concat(lines, "\n")
 end
 
-function M.get_blame()
+local function blame()
 	local current_file = vim.fn.expand("%:p")
 	local git_blame = M.get_text("git blame " .. current_file)
 
-	return M.filter_lines(git_blame)
+	return git_blame
+end
+
+local function is_file_tracked()
+	local current_file = vim.fn.expand("%:p")
+	local git_status = M.get_text("git ls-files --error-unmatch " .. current_file)
+
+	return git_status ~= ""
+end
+
+function M.get_blame()
+	if is_file_tracked() ~= true or vim.fn.executable("git") == 0 then
+		return
+	end
+
+	local data = blame()
+	if data == nil then
+		return
+	end
+
+	return M.filter_lines(data)
 end
 
 return M

@@ -13,14 +13,8 @@ function M.blame_to_table(blame)
 
 	local numbers = {}
 
-	-- TODO: There must be a better way to do this
-	-- split lines by first 8 spaces
 	for _, line in ipairs(lines) do
-		-- column number is 9-th on my machine
-		-- match text after +0000
-		local match = vim.fn.split(line, "0000")
-		local trimmed = match[2]:match("%d+")
-		table.insert(numbers, tonumber(trimmed))
+		table.insert(numbers, tonumber(line))
 	end
 
 	return numbers
@@ -68,23 +62,14 @@ function M.get_text(input)
 	return result
 end
 
--- TODO: There must be a better way to do this
-function M.filter_lines(input_text)
-	local pattern = "^00000000"
-	local lines = {}
-
-	for line in input_text:gmatch("[^\n]+") do
-		if line:find(pattern) then
-			table.insert(lines, line)
-		end
-	end
-
-	return table.concat(lines, "\n")
-end
-
 local function blame()
 	local current_file = vim.fn.expand("%:p")
-	local git_blame = M.get_text("git blame " .. current_file)
+	local git_blame = M.get_text(
+		"git --no-pager blame --line-porcelain "
+			.. current_file
+			.. " | \
+awk '/^[0-9a-f]{40}/ { commit=$1; line=$3 } /^\t/ { print commit, line }' | grep '^0000000000000000000000000000000000000000' | sed 's/^0*//g'  | tr -d ' '"
+	)
 
 	return git_blame
 end
@@ -106,7 +91,7 @@ function M.get_blame()
 		return
 	end
 
-	return M.filter_lines(data)
+	return data
 end
 
 return M

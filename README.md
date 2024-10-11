@@ -1,6 +1,6 @@
 # find-next-change-nvim
 
-Navigates to the next/previous uncommitted change(only if you added smth. currently dodn't have deletions) in git in the current buffer.
+Moves cursor to the next/previous uncommitted change.
 
 Example config in lazyvim
 
@@ -12,11 +12,6 @@ return {
 
     -- Currently it subscribes to BufWritePost and BufReadPost events.
     find.listen_to_events()
-
-    -- If you don't want to subscribe, you can use
-    -- vim.keymap.set("n", "gBa", function()
-    --   M.update_lines()
-    -- end)
 
     -- Navigation keybindings
     vim.keymap.set("n", "<S-Down>", function()

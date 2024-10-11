@@ -76,9 +76,11 @@ end
 
 local function is_file_tracked()
 	local current_file = vim.fn.expand("%:p")
-	local git_status = M.get_text("git ls-files --error-unmatch " .. current_file)
+	local git_status = M.get_text(
+		"git --no-pager ls-files --error-unmatch " .. current_file .. " > /dev/null 2>&1 && echo 1 || echo 0"
+	)
 
-	return git_status ~= ""
+	return git_status ~= "0"
 end
 
 function M.get_blame()

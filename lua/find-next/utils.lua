@@ -20,18 +20,6 @@ function M.blame_to_table(blame)
 	return numbers
 end
 
-function M.split(str, sep)
-	if sep == nil then
-		sep = "%s"
-	end
-
-	local t = {}
-	for substr in string.gmatch(str, "([" .. sep .. "]+)") do
-		table.insert(t, substr)
-	end
-	return t
-end
-
 function M.split_by_groups(numbers)
 	local prev_number = 0
 	local first_in_sequence = {}

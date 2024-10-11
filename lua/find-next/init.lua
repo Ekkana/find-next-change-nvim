@@ -2,12 +2,8 @@ local utils = require("find-next.utils")
 
 local M = {}
 
--- TODO: Add error handling
--- TODO: Probably we need to fire git blame on some better event (file save)
-
 local events = {
 	"BufWritePost",
-	-- "BufEnter",
 	"BufReadPost",
 }
 
